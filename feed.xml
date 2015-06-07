@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Enjoying life</title>
+    <description>Hi, I’m a App developer.
+</description>
+    <link>http://jodg.net/</link>
+    <atom:link href="http://jodg.net/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sun, 07 Jun 2015 13:21:03 +0800</pubDate>
+    <lastBuildDate>Sun, 07 Jun 2015 13:21:03 +0800</lastBuildDate>
+    <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>cocos2d-x stup for mac</title>
+        <description>&lt;p&gt;记录一下学习 &lt;code&gt;cocos2d&lt;/code&gt; 的过程.
+学习一个新的东西,还是要从搭配环境开始.
+以下是 &lt;code&gt;mac&lt;/code&gt; 上安装 &lt;code&gt;cocos2d&lt;/code&gt; 的步骤.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;cocos2d-x&quot;&gt;下载 cocos2d-x&lt;/h4&gt;
+
+&lt;p&gt;首先去 &lt;a href=&quot;http://www.cocos2d-x.org/download&quot;&gt;官网&lt;/a&gt; 选择下载所要版本,我选择的最新的 &lt;a href=&quot;http://www.cocos2d-x.org/filedown/cocos2d-x-3.6.zip&quot;&gt;cocos2d-x-3.6&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;section&quot;&gt;解压安装&lt;/h4&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span class=&quot;c&quot;&gt;#解压文件至&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#/Applications/development/cocos2d-x/V3.6&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#进入安装目录&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /Applications/development/cocos2d-x/V3.6
+
+&lt;span class=&quot;c&quot;&gt;#执行安装脚本&lt;/span&gt;
+python ./setup.py
+
+&lt;span class=&quot;c&quot;&gt;#上一步已经把 cocos 加入到当前用户的环境变量中,我们刷新以下.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#如果用的是oh-my-zsh 那么需要把 .bash_profile 中新增的变量加到 .zshrc 中并刷新该文件&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; /Users/jodg/.bash_profile
+
+&lt;span class=&quot;c&quot;&gt;#创建一个新的项目&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#cocos new -h 查看帮助&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#new Creates a new project&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#-p PACKAGE_NAME, --package PACKAGE_NAME&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#-l {cpp,lua,js}, --language {cpp,lua,js}&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#-d DIRECTORY, --directory DIRECTORY&lt;/span&gt;
+cocos new MyGameV3CPP -p learning.jodg.mygamev3cpp -l cpp -d /Users/jodg/Documents/work/cocos&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;section-1&quot;&gt;运行项目&lt;/h4&gt;
+&lt;p&gt;刚刚我们创建了一个 &lt;code&gt;c++&lt;/code&gt; 为开发语言的项目 &lt;code&gt;MyGameV3CPP&lt;/code&gt;
+可以看到项目目录&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;/Users/jodg/Documents/work/cocos/MyGameV3CPP&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;中生成了若干文件.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jodg.net/assets/img/post/2015-06-06-cocos2d-x-stup-for-mac-1.jpg&quot; class=&quot;img-responsive img-rounded&quot; style=&quot;width: 550px;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我选择开发mac 和 ios 游戏,所以进入 &lt;code&gt;proj.ios_mac&lt;/code&gt; 目录,点击 &lt;code&gt;MyGameV3CPP.xcodeproj&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jodg.net/assets/img/post/2015-06-06-cocos2d-x-stup-for-mac-2.jpg&quot; class=&quot;img-responsive img-rounded&quot; style=&quot;width: 550px;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Xcode 会启动并载入项目.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jodg.net/assets/img/post/2015-06-06-cocos2d-x-stup-for-mac-3.jpg&quot; class=&quot;img-responsive img-rounded&quot; style=&quot;width: 550px;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;选择虚拟机并运行项目.第一次编译会稍微慢一点.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://jodg.net/assets/img/post/2015-06-06-cocos2d-x-stup-for-mac-4.jpg&quot; class=&quot;img-responsive img-rounded&quot; style=&quot;width: 550px;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;环节安装完毕.&lt;/p&gt;
+
+&lt;p&gt;最后还有一个命令行编译的命令.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span class=&quot;c&quot;&gt;#cocos compile -h 看详细信息&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#很好理解&lt;/span&gt;
+cocos compile -q -s /Users/jodg/Documents/work/cocos/MyGameV3CPP -p mac -m release -o /Users/jodg/Documents/work/cocos/release&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sun, 07 Jun 2015 02:16:00 +0800</pubDate>
+        <link>http://jodg.net/cocos2d-x/2015/06/07/cocos2d-x-stup-for-mac/</link>
+        <guid isPermaLink="true">http://jodg.net/cocos2d-x/2015/06/07/cocos2d-x-stup-for-mac/</guid>
+        
+        
+        <category>cocos2d-x</category>
+        
+      </item>
+    
+      <item>
+        <title>New beginning</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;” Every story has an end. But in life, every ending is just a new beginning. “&lt;/p&gt;
+
+  &lt;p&gt;” Life was like a box of chocolate, you never know what you’re gonna get. “&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Wed, 03 Jun 2015 18:16:00 +0800</pubDate>
+        <link>http://jodg.net/test/2015/06/03/beginning/</link>
+        <guid isPermaLink="true">http://jodg.net/test/2015/06/03/beginning/</guid>
+        
+        
+        <category>test</category>
+        
+      </item>
+    
+  </channel>
+</rss>

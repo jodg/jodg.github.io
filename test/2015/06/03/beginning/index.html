@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    
+
+    <title>New beginning - Enjoying life</title>
+    <meta name="description" content="Hi, I’m a App developer.
+">
+    <meta property="og:locale" content="en_US"><meta property="og:type" content="article"><meta property="og:title" content="New beginning - Enjoying life"><meta property="og:site_name" content="Enjoying life"><meta property="og:description" content="Hi, I’m a App developer."><meta property="og:url" content="http://jodg.net/test/2015/06/03/beginning/"><meta property="article:published_time" content="2015-06-03T18:16:00+08:00"><meta property="article:author" content="http://jodg.net/about">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="http://jodg.net/assets/css/main.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="http://jodg.net/bower_components/html5shiv/dist/html5shiv.js"></script>
+      <script src="http://jodg.net/bower_components/respond/dest/respond.min.js"></script>
+    <![endif]-->
+    <script src="http://jodg.net/assets/js/jquery-2.1.4.min.js"></script>
+    <script src="http://jodg.net/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="http://jodg.net/assets/js/bootswatch.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('body').append('<div id="toTop" class="btn btn-info"><i class="fa fa-arrow-up"></i></div>');
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 1200) {
+                    $('#toTop').fadeIn();
+                } else {
+                    $('#toTop').fadeOut();
+                }
+            });
+            $('#toTop').click(function(){
+                $("html, body").animate({ scrollTop: 0 }, 700);
+                return false;
+            });
+        });
+    </script>
+  </head>
+  <body>
+
+  <header class="navbar navbar-inverse navbar-static-top" role="banner">      <div class="container">        <div class="navbar-header">            <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">            <span class="icon-bar"></span>            <span class="icon-bar"></span>            <span class="icon-bar"></span>          </button>            <a href="http://jodg.net/" class="navbar-brand">Enjoying life</a>        </div>        <nav class="navbar-collapse bs-navbar-collapse collapse" aria-expanded="false">          <ul class="nav navbar-nav">                        <li>              <a href="http://jodg.net/about">About me</a>            </li>                        <li>              <a href="http://jodg.net/archive">Blog Archive</a>            </li>                        <li>              <a href="http://jodg.net/edit">Markdown Edit</a>            </li>                      </ul>        </nav>      </div>    </header>
+
+
+    <div class="container">
+    <div class="container col-md-8 col-centered">
+
+  <header>
+    <h2>New beginning</h2>
+    <p class="text-muted">
+    
+      <span class="categories">
+      test
+      </span> |
+    
+    <span class="categories">
+    Jun 3, 2015 • Ding Jiao
+    </span>
+    </p>
+  </header>
+
+  <div>
+    <blockquote>
+  <p>” Every story has an end. But in life, every ending is just a new beginning. “</p>
+
+  <p>” Life was like a box of chocolate, you never know what you’re gonna get. “</p>
+</blockquote>
+    
+  </div>
+
+  
+  <hr>
+      <h4>Related Posts</h4>
+      <ul>
+        
+          <li>
+            <h5>
+              <a href="http://jodg.net/cocos2d-x/2015/06/07/cocos2d-x-stup-for-mac/">
+                cocos2d-x stup for mac
+                <small>07 Jun 2015</small>
+              </a>
+            </h5>
+          </li>
+        
+      </ul>
+  
+
+  
+    <div>
+        <div>
+            <ul class="nav nav-pills">
+                <li><a href="javascript:;" class="load-view">View Comments...<span class="badge"></span></a></li>
+            </ul>
+        </div>
+        <div id="disqus_thread"></div>
+        <div id="g-comments"></div>
+        <script type="text/javascript">
+            $('.load-view').on("click",function(){
+                $(this).fadeOut(300);
+                var disqus_shortname = "jodg";
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+                return false;
+            });
+        </script>
+    </div>
+    
+</div>
+
+
+    </div>
+    <div style="height:100px">
+    </div>
+  </body>
+</html>
