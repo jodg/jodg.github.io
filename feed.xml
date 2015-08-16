@@ -6,13 +6,13 @@
 </description>
     <link>http://jodg.net/</link>
     <atom:link href="http://jodg.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 01 Jul 2015 15:13:18 +0800</pubDate>
-    <lastBuildDate>Wed, 01 Jul 2015 15:13:18 +0800</lastBuildDate>
+    <pubDate>Sun, 16 Aug 2015 13:24:29 +0800</pubDate>
+    <lastBuildDate>Sun, 16 Aug 2015 13:24:29 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
     
       <item>
         <title>2D Coordinate spiral matrix</title>
-        <description>&lt;p&gt;刚花了好长时间做了一个算法题,代码没多少,想了很久怎么做&lt;/p&gt;
+        <description>&lt;p&gt;刚花了好长时间做了一个算法题,代码没多少,想了很久怎么做.&lt;/p&gt;
 
 &lt;p&gt;过程比较累心(调试验证错误,调试验证错误…),&lt;/p&gt;
 
