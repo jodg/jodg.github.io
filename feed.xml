@@ -6,8 +6,8 @@
 </description>
     <link>http://jodg.net/</link>
     <atom:link href="http://jodg.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 01 Sep 2015 11:52:40 +0800</pubDate>
-    <lastBuildDate>Tue, 01 Sep 2015 11:52:40 +0800</lastBuildDate>
+    <pubDate>Tue, 01 Sep 2015 12:06:17 +0800</pubDate>
+    <lastBuildDate>Tue, 01 Sep 2015 12:06:17 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
     
       <item>
@@ -103,7 +103,9 @@ mkdir /dev/shm/hls/hls&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;code&gt;nginx&lt;/code&gt; 服务器的调整完成.接下来应该是编码器的安装.&lt;/p&gt;
 
-&lt;p&gt;&lt;code&gt;ffmpeg&lt;/code&gt;的安装,&lt;code&gt;github&lt;/code&gt; 上有一个安装脚本. https://github.com/jnaqsh/ffmpeg_installer.git&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ffmpeg&lt;/code&gt;的安装,&lt;code&gt;github&lt;/code&gt; 上有一个安装脚本.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;https://github.com/jnaqsh/ffmpeg_installer.git&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;安装好以后,可以用下面的命令转码上传的流.&lt;/p&gt;
 
