@@ -6,9 +6,199 @@
 </description>
     <link>http://jodg.net/</link>
     <atom:link href="http://jodg.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 16 Aug 2015 13:24:29 +0800</pubDate>
-    <lastBuildDate>Sun, 16 Aug 2015 13:24:29 +0800</lastBuildDate>
+    <pubDate>Tue, 01 Sep 2015 11:49:54 +0800</pubDate>
+    <lastBuildDate>Tue, 01 Sep 2015 11:49:54 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>用nginx搭建rtmp协议的直播环境</title>
+        <description>&lt;p&gt;最近需要部署一个直播环境,基于 &lt;code&gt;rtmp&lt;/code&gt; 协议,然后需要服务器做 &lt;code&gt;HLS&lt;/code&gt;(HTTP Live Streaming) 切片,然后客户端通过切片生成的 &lt;code&gt;index.m3u8&lt;/code&gt; 文件播放.&lt;/p&gt;
+
+&lt;p&gt;开始没什么经验,于是查找各种资料,走了些弯路,这里记录一下.&lt;/p&gt;
+
+&lt;p&gt;大概流程是这样的,&lt;/p&gt;
+
+&lt;p&gt;直播源通过 &lt;code&gt;rtmp&lt;/code&gt; 协议将数据写入至服务器.&lt;/p&gt;
+
+&lt;p&gt;服务器获取这个视频流,并实时H264转码和AAC转码.&lt;/p&gt;
+
+&lt;p&gt;做切片处理,生成 &lt;code&gt;hls&lt;/code&gt; 的&lt;code&gt;index.m3u8&lt;/code&gt;和&lt;code&gt;.ts&lt;/code&gt; 切片.&lt;/p&gt;
+
+&lt;p&gt;客户端请求切片的索引文件,按顺序 &lt;code&gt;http&lt;/code&gt; 请求并播放 &lt;code&gt;.ts&lt;/code&gt; 分片视频,达到直播效果.&lt;/p&gt;
+
+&lt;p&gt;思路出来了,就开始选择工具并实施了.网上大部分资料是这样的.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;rtmp&lt;/code&gt; 服务器用 &lt;code&gt;nginx&lt;/code&gt; + &lt;code&gt;nginx-rtmp-module&lt;/code&gt; 实现.&lt;/p&gt;
+
+&lt;p&gt;转码使用&lt;code&gt;FFmpeg&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;切片使用&lt;code&gt;m3u8-segmenter&lt;/code&gt;做切片.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;nginx&lt;/code&gt; 对生成的 &lt;code&gt;index.m3u8&lt;/code&gt;和&lt;code&gt;.ts&lt;/code&gt; 切片做 &lt;code&gt;http&lt;/code&gt; 支持.&lt;/p&gt;
+
+&lt;p&gt;目标很明确,于是开始动手.&lt;/p&gt;
+
+&lt;p&gt;服务器上已经安装了 &lt;code&gt;nginx&lt;/code&gt; 并在提供服务,这时候需要把新的模块增加进去.步骤如下.&lt;/p&gt;
+
+&lt;p&gt;本人的环境是 &lt;code&gt;CentOS 6.5&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span class=&quot;c&quot;&gt;#获取模块&lt;/span&gt;
+git clone https://github.com/arut/nginx-rtmp-module.git
+
+&lt;span class=&quot;c&quot;&gt;#可以查看原来编译时都带了哪些参数&lt;/span&gt;
+nginx -V
+
+&lt;span class=&quot;c&quot;&gt;#进入nginx 的源码目录,在原来的参数基础上增加 --add-module=/root/nginx-rtmp-module 重新编译&lt;/span&gt;
+./configure --prefix&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/local/nginx --user&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;www --group&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;www --with-http_stub_status_module --with-http_spdy_module --with-http_ssl_module --with-ipv6 --with-http_gzip_static_module --with-http_realip_module --with-http_flv_module --with-ld-opt&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;-ljemalloc&amp;#39;&lt;/span&gt; --add-module&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/root/nginx-rtmp-module
+
+&lt;span class=&quot;c&quot;&gt;#编译,不要 make install,否则会覆盖已有.&lt;/span&gt;
+make
+
+&lt;span class=&quot;c&quot;&gt;#备份原有 nginx, 并覆盖.&lt;/span&gt;
+cp /usr/local/nginx/sbin/nginx /usr/local/nginx/sbin/nginx.bak
+cp /root/nginx-1.8.0/objs/nginx /usr/local/nginx/sbin/nginx
+
+&lt;span class=&quot;c&quot;&gt;#修改配置.&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;#增加 rtmp 模块.&lt;/span&gt;
+rtmp&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        server&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                listen 8080&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                chunk_size 256&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                application mylive&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                        live on&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;#增加状态页.&lt;/span&gt;
+cp /root/nginx-rtmp-module/stat.xsl /home/wwwroot/default/
+
+&lt;span class=&quot;c&quot;&gt;#修改 nginx 配置增加,我把目录放到了`tmpfs`盘.&lt;/span&gt;
+server &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            listen 8081&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            server_name _&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            root /dev/shm/hls&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            index index.html&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            location /stat&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    rtmp_stat all&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    rtmp_stat_stylesheet stat.xsl&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+            location /stat.xsl&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    root /dev/shm/hls&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+            location  /hls &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    types &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                        application/vnd.apple.mpegusr m3u8&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                        video/mp2t ts&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+                    add_header Cache-Control no-cache&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;#增加 hls 目录&lt;/span&gt;
+mkdir /dev/shm/hls/hls&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code&gt;nginx&lt;/code&gt; 服务器的调整完成.接下来应该是编码器的安装.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;ffmpeg&lt;/code&gt;的安装,&lt;code&gt;github&lt;/code&gt; 上有一个安装脚本. https://github.com/jnaqsh/ffmpeg_installer.git&lt;/p&gt;
+
+&lt;p&gt;安装好以后,可以用下面的命令转码上传的流.&lt;/p&gt;
+
+&lt;p&gt;然后还需要安装一个&lt;code&gt;segment&lt;/code&gt;,对转好的流进行切片,生成&lt;code&gt;index.m3u8&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;但是…segment的安装没搞定…于是继续找资料.&lt;/p&gt;
+
+&lt;p&gt;最后发现&lt;code&gt;ffmpeg&lt;/code&gt;已经带有&lt;code&gt;hls&lt;/code&gt;分片的功能.如下:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;ffmpeg -i rtmp://192.168.7.203:8080/mylive/&lt;span class=&quot;nv&quot;&gt;$name&lt;/span&gt; -c:a aac -strict experimental -ac &lt;span class=&quot;m&quot;&gt;2&lt;/span&gt; -b:a 64k -ar &lt;span class=&quot;m&quot;&gt;44100&lt;/span&gt; -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level &lt;span class=&quot;m&quot;&gt;21&lt;/span&gt; -b:v 400K -r &lt;span class=&quot;m&quot;&gt;12&lt;/span&gt; -g &lt;span class=&quot;m&quot;&gt;36&lt;/span&gt; -f hls -hls_time &lt;span class=&quot;m&quot;&gt;9&lt;/span&gt;  -hls_list_size  &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; rtmp://192.168.7.203:8080/hls/&lt;span class=&quot;nv&quot;&gt;$name&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;理论上可以在 nginx 配置中添加exec配置,直接执行,&lt;/p&gt;
+
+&lt;p&gt;但是…没搞定…&lt;/p&gt;
+
+&lt;p&gt;最后就直接手动起了这个执行了这个命令,总体是完成了直播分片的预期.&lt;/p&gt;
+
+&lt;p&gt;但是想了想,因为本身是通过&lt;code&gt;Adobe Flash Media Live Encoder&lt;/code&gt;连接,推送的格式设定的是视频 &lt;code&gt;H264&lt;/code&gt; 音频 &lt;code&gt;ACC&lt;/code&gt;,这样转码就没必要了.&lt;/p&gt;
+
+&lt;p&gt;只需要分片就行.&lt;/p&gt;
+
+&lt;p&gt;后来又查了点资料,发现&lt;code&gt;nginx-rtmp-module&lt;/code&gt;可以直接分片…&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;nginx&lt;/code&gt; 配置如下,我把目录放到了&lt;code&gt;tmpfs&lt;/code&gt;盘:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;rtmp&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        server&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                listen 8080&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                chunk_size 256&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                application hls &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                    live on&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    hls on&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    hls_path /dev/shm/hls/hls&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    hls_nested on&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    hls_fragment 2s&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    hls_playlist_length 6s&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;然后世界就变得简单了.一旦有流进来,就会自动创建这个流的对应目录和 &lt;code&gt;index&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;其实&lt;code&gt;nginx-rtmp-module&lt;/code&gt;还有很多 &lt;code&gt;hls&lt;/code&gt; 配置选项,有兴趣可以去他的 &lt;code&gt;github&lt;/code&gt; 看.&lt;/p&gt;
+
+&lt;p&gt;这样 &lt;code&gt;nginx&lt;/code&gt; 会自己控制文件的切分,删除,切片文件会按数字递增,从0开始&lt;/p&gt;
+
+&lt;p&gt;0.ts
+1.ts
+2.ts
+index.m3u8&lt;/p&gt;
+
+&lt;p&gt;连接 rtmp 通过rtmp://192.168.7.203:8080/hls/name ,&lt;/p&gt;
+
+&lt;p&gt;录制推流推荐用&lt;code&gt;obs&lt;/code&gt;(请自行搜索),很强大的软件.&lt;/p&gt;
+
+&lt;p&gt;服务器然后会在/dev/shm/hls/hls下生成 name/index.m3u8 和切片&lt;/p&gt;
+
+&lt;p&gt;然后播放器用 http://192.168.7.203:8080/hls/name/index.m3u8 播放&lt;/p&gt;
+
+&lt;p&gt;如果是用 &lt;code&gt;Safari&lt;/code&gt; 的同学,可以用一下 &lt;code&gt;html&lt;/code&gt; 代码测试.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE HTML&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;Video Player Html5&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;style&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;text-align&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;center&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;.div&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;margin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;border&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1px&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;solid&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;#F00&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;video&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;play&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;http://192.168.7.203:8080/hls/name/index.m3u8&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;controls=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;controls&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;autoplay=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;autoplay&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+                your browser does not support the video tag
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/video&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;由于视频流推上来,然后再等待切分,有处理时间差,客户端连接播放会增加时间差,最后延时会在20s 以上.&lt;/p&gt;
+
+&lt;p&gt;还没找到优化的方案.需要继续研究.&lt;/p&gt;
+
+&lt;p&gt;要想把延时变小, &lt;code&gt;CDN&lt;/code&gt; 加速做好,&lt;/p&gt;
+
+&lt;p&gt;还有很多东西需要学,需要不断的尝试,改进….&lt;/p&gt;
+</description>
+        <pubDate>Sat, 15 Aug 2015 02:16:00 +0800</pubDate>
+        <link>http://jodg.net/nginx/2015/08/15/nginx-rtmp-hls/</link>
+        <guid isPermaLink="true">http://jodg.net/nginx/2015/08/15/nginx-rtmp-hls/</guid>
+        
+        
+        <category>nginx</category>
+        
+      </item>
     
       <item>
         <title>2D Coordinate spiral matrix</title>
@@ -36,7 +226,7 @@
 复杂度要求O(1);&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-14-2D-coordinate-spiral-matrix.jpg &quot; class=&quot;img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-14-2D-coordinate-spiral-matrix.jpg &quot; class=&quot;col-centered img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;说说思路:&lt;/p&gt;
 
@@ -139,19 +329,19 @@ cocos new MyGameV3CPP -p learning.jodg.mygamev3cpp -l cpp -d /Users/jodg/Documen
 
 &lt;p&gt;中生成了若干文件.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-1.jpg &quot; class=&quot;img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-1.jpg &quot; class=&quot;col-centered img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;我选择开发mac 和 ios 游戏,所以进入 &lt;code&gt;proj.ios_mac&lt;/code&gt; 目录,点击 &lt;code&gt;MyGameV3CPP.xcodeproj&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-2.jpg &quot; class=&quot;img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-2.jpg &quot; class=&quot;col-centered img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Xcode 会启动并载入项目.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-3.jpg &quot; class=&quot;img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-3.jpg &quot; class=&quot;col-centered img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;选择虚拟机并运行项目.第一次编译会稍微慢一点.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-4.jpg &quot; class=&quot;img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/img/post/2015-06-06-cocos2d-x-setup-for-mac-4.jpg &quot; class=&quot;col-centered img-responsive img-rounded&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;开发环境安装完毕.&lt;/p&gt;
 
