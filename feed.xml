@@ -6,12 +6,12 @@
 </description>
     <link>http://jodg.net/</link>
     <atom:link href="http://jodg.net/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 01 Sep 2015 11:49:54 +0800</pubDate>
-    <lastBuildDate>Tue, 01 Sep 2015 11:49:54 +0800</lastBuildDate>
+    <pubDate>Tue, 01 Sep 2015 11:52:40 +0800</pubDate>
+    <lastBuildDate>Tue, 01 Sep 2015 11:52:40 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
     
       <item>
-        <title>用nginx搭建rtmp协议的直播环境</title>
+        <title>nginx搭建rtmp协议的直播环境</title>
         <description>&lt;p&gt;最近需要部署一个直播环境,基于 &lt;code&gt;rtmp&lt;/code&gt; 协议,然后需要服务器做 &lt;code&gt;HLS&lt;/code&gt;(HTTP Live Streaming) 切片,然后客户端通过切片生成的 &lt;code&gt;index.m3u8&lt;/code&gt; 文件播放.&lt;/p&gt;
 
 &lt;p&gt;开始没什么经验,于是查找各种资料,走了些弯路,这里记录一下.&lt;/p&gt;
